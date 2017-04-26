@@ -43,12 +43,14 @@ func (c *runCmd) Wait() error {
 // writeTempFile copies the code in a temporary file that will get passed as an
 // argument to the runner (as in `sh <tmpFile>`).
 func (c *runCmd) writeTempFile(data string, fileExtension string) error {
+	// dir => /tmp/dog054003078
 	dir, err := ioutil.TempDir("", "dog")
 	if err != nil {
 		return err
 	}
 
-	c.tmpFile = fmt.Sprintf("%s/task%s", dir, fileExtension)
+    // tmpFile => /tmp/dog054003078/task.sh
+    c.tmpFile = fmt.Sprintf("%s/task%s", dir, fileExtension)
 
 	err = ioutil.WriteFile(c.tmpFile, []byte(data), 0644)
 	if err != nil {

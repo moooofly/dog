@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dogtools/dog"
+	"github.com/moooofly/dog"
 )
 
 func main() {

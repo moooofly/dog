@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/dogtools/dog/run"
+	"github.com/moooofly/dog/run"
 )
 
 // ErrCycleInTaskChain means that there is a loop in the path of tasks execution.
@@ -90,6 +90,7 @@ func (taskChain *TaskChain) Run(stdout, stderr io.Writer) error {
 		register := new(bytes.Buffer)
 
 		exitStatus := 0
+        // 前一个 task 中的 register 值作为了后一个 task 的 env 使用
 		env := append(t.Env, registers...)
 
 		switch t.Runner {
@@ -117,25 +118,35 @@ func (taskChain *TaskChain) Run(stdout, stderr io.Writer) error {
 			return err
 		}
 
+		// runner => 即 &runCmd{} 对应底层 exec.Cmd
+        // runOut => 与 runner 的 stdout 连接的 pipe
+        // runErr => 与 runner 的 stderr 连接的 pipe
 		runOut, runErr, err := run.GetOutputs(runner)
 		if err != nil {
 			return err
 		}
 
 		if t.Register == "" {
+            // 将 runner 的标准输出重定向到 stdout
 			go io.Copy(stdout, runOut)
 		} else {
+            // 将 runner 的标准输出重定向到 外部存储
 			go io.Copy(register, runOut)
 		}
+        // 将 runner 的标准错误重定向到 stderr
 		go io.Copy(stderr, runErr)
 
 		startTime = time.Now()
+
+        // Note: 这段代码等价于 exec.Run() 的实现
+        /////////
 		err = runner.Start()
 		if err != nil {
 			return err
 		}
 
 		err = runner.Wait()
+        /////////
 		if err != nil {
 			if exitError, ok := err.(*exec.ExitError); ok {
 				if waitStatus, ok := exitError.Sys().(syscall.WaitStatus); !ok {
@@ -151,6 +162,7 @@ func (taskChain *TaskChain) Run(stdout, stderr io.Writer) error {
 			return err
 		}
 
+        // 若定义了 Register 则 task 之间基于 register 进行传值
 		if t.Register != "" {
 			r := fmt.Sprintf("%s=%s", t.Register, register.String())
 			registers = append(registers, strings.TrimSpace(r))

@@ -59,6 +59,7 @@ type taskYAML struct {
 func Parse(p []byte) (dogfile Dogfile, err error) {
 	var tasks []*taskYAML
 
+	// Converts YAML to JSON then uses JSON to unmarshal into an object.
 	err = yaml.Unmarshal(p, &tasks)
 	if err != nil {
 		return

@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/dogtools/dog"
+	"github.com/moooofly/dog"
 )
 
 const version = "v0.4.0"
